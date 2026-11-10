@@ -10,11 +10,11 @@ public class Utilizatori extends Entitati <String>{
 
     public Utilizatori(String Username, String Prenume, String Nume) {
 
-        this(Username, Prenume, Nume, null);
+        this(null,Username,Nume,Prenume);
 
     }
 
-    public Utilizatori(String Username, String Prenume, String Nume, Long IdBD) {
+    public Utilizatori( Long IdBD,String Username, String Prenume, String Nume) {
 
         super(Username);
         this.Nume=Nume;
