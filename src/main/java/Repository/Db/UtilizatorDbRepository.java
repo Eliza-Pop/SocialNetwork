@@ -115,12 +115,48 @@ public class UtilizatorDbRepository implements Repository<String, Utilizatori> {
     }
 
     @Override
-    public Optional<Utilizatori> delete(String s) {
-        throw new UnsupportedOperationException("UtilizatorDbRepository se implementeaza la laboratorul 4");
+    public Optional<Utilizatori> delete(String username) {
+        if(username==null)
+            throw new IllegalArgumentException("Id-ul nu poate fi null !");
+        String sql = "DELETE FROM Users WHERE username = ? RETURNING "+COLUMNS;
+        try(Connection c = connect(); PreparedStatement ps = c.prepareStatement(sql))
+        {
+            ps.setString(1,username);
+            try(ResultSet rs = ps.executeQuery())
+            {
+                if(rs.next())
+                    return Optional.of(map(rs));
+                else
+                    return Optional.<Utilizatori> empty();
+            }
+        }
+        catch (SQLException e)
+        {
+            throw DbErrors.translate(e," deleting a user !");
+        }
     }
 
     @Override
     public Utilizatori update(Utilizatori entitate) {
-        throw new UnsupportedOperationException("UtilizatorDbRepository se implementeaza la laboratorul 4");
+        if(entitate==null)
+            throw new IllegalArgumentException("Id-ul nu poate fi null !");
+        String sql = "UPDATE Users SET first_name = ?, last_name = ? WHERE username = ?";
+        validator.validare(entitate);
+        try(Connection c = connect(); PreparedStatement ps = c.prepareStatement(sql))
+        {
+            ps.setString(1,entitate.get_Prenume());
+            ps.setString(2,entitate.get_Nume());
+            ps.setString(3,entitate.get_Username());
+            if(ps.executeUpdate()==0)
+            {
+                return entitate;
+            }
+            else
+                return null;
+        }
+        catch (SQLException e)
+        {
+            throw DbErrors.translate(e," searching a user !");
+        }
     }
 }

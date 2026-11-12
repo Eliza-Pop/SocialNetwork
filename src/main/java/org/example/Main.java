@@ -11,6 +11,7 @@ import Factory.RepositoryConfig;
 import Factory.RepositoryFactory;
 
 
+import Factory.RepositoryType;
 import Repository.Repository;
 import Service.ServiceRetea;
 import Service.ServiceUtilizatori;
@@ -29,7 +30,7 @@ public class Main {
             if(u.get_Username().trim().isEmpty() || u.get_Nume().trim().isEmpty() || u.get_Prenume().trim().isEmpty())
                 throw new ExceptieValidare("Nici un camp al utilizatorului nu poate fi gol!");
         }).andThen(u->{
-            if(u.get_Username().contains(";") || u.get_Nume().contains(";") || u.get_Prenume().contains(";"))
+            if(config.getType()== RepositoryType.FILE && (u.get_Username().contains(";") || u.get_Nume().contains(";") || u.get_Prenume().contains(";")))
                 throw new ExceptieValidare("Utilizatorul nu poate contine caracterul ';' !");
         });
         Repository<String,Utilizatori> repoU = factory.createUtilizatoriRepository(validatorUtilizator);
