@@ -40,7 +40,6 @@ public class UI {
             System.out.println("4.Sterge prietenie");
             System.out.println("5.Afiseaza numarul de comunitati");
             System.out.println("6.Afiseaza cea mai sociabila comunitate");
-            System.out.println("7.Afiseaza toate prieteniile existente");
             System.out.println("Comanda dorita: ");
             String optiune = in.nextLine().trim();
             try {

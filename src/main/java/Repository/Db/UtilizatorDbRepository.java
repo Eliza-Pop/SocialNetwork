@@ -65,7 +65,7 @@ public class UtilizatorDbRepository implements Repository<String, Utilizatori> {
 
     @Override
     public Collection<Utilizatori> findAll() {
-        String sql = "SELECT " + COLUMNS + " FROM Users WHERE username = ?";
+        String sql = "SELECT " + COLUMNS + " FROM Users ORDER BY id";
         List<Utilizatori> rezultat = new ArrayList<>();
         try(Connection c = connect(); PreparedStatement ps = c.prepareStatement(sql); ResultSet rs = ps.executeQuery())
         {
@@ -156,7 +156,7 @@ public class UtilizatorDbRepository implements Repository<String, Utilizatori> {
         }
         catch (SQLException e)
         {
-            throw DbErrors.translate(e," searching a user !");
+            throw DbErrors.translate(e," updating a user !");
         }
     }
 }

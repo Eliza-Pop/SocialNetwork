@@ -148,6 +148,25 @@ public class PrietenieDbRepository implements Repository<Tuple<String,String>, P
 
     @Override
     public Prietenie update(Prietenie entitate) {
-        throw new UnsupportedOperationException("UtilizatorDbRepository se implementeaza la laboratorul 4");
+        if(entitate==null)
+            throw new IllegalArgumentException("Id-ul nu poate fi null !");
+        String sql = "UPDATE Friendships f SET friends_from=CAST(?) AS TIMESTAMP FROM Users a , Users b WHERE"+SAME_PAIR;
+        validator.validare(entitate);
+        try(Connection c = connect();PreparedStatement ps= c.prepareStatement(sql))
+        {
+            ps.setTimestamp(1,Timestamp.valueOf(entitate.Date()));
+            ps.setString(2,entitate.Utilizator1());
+            ps.setString(3,entitate.Utilizator2());
+            if(ps.executeUpdate()==0)
+            {
+                return entitate;
+            }
+            else
+                return null;
+        }
+        catch (SQLException e)
+        {
+            throw DbErrors.translate(e," updating a user !");
+        }
     }
 }
