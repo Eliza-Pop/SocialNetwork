@@ -1,6 +1,5 @@
 package Repository.Db;
 
-import Entitati.Entitati;
 import Entitati.Utilizatori;
 import Entitati.Validator.Validator;
 import Excepti.ExceptieDuplicat;
@@ -34,11 +33,21 @@ public class UtilizatorDbRepository implements Repository<String, Utilizatori> {
         return DriverManager.getConnection(url,user,password);
     }
 
+    /**
+     * Creates a map of the friendships present in the database
+     * @param rs
+     * @return
+     * @throws SQLException
+     */
     private static Utilizatori map(ResultSet rs) throws SQLException{
         return new Utilizatori(rs.getLong("id"),rs.getString("username"),rs.getString("first_name"),rs.getString("last_name"));
     }
 
-
+    /**
+     * Searches for the User with the specified username and returning it
+     * @param username
+     * @return
+     */
     @Override
     public Optional<Utilizatori> findOne(String username) {
         if(username == null)
@@ -63,6 +72,10 @@ public class UtilizatorDbRepository implements Repository<String, Utilizatori> {
         }
     }
 
+    /**
+     * Returns all users that exist in the database
+     * @return all users
+     */
     @Override
     public Collection<Utilizatori> findAll() {
         String sql = "SELECT " + COLUMNS + " FROM Users ORDER BY id";
@@ -81,6 +94,11 @@ public class UtilizatorDbRepository implements Repository<String, Utilizatori> {
         }
     }
 
+    /**
+     * Saves the specified user in the database
+     * @param entitate
+     * @return the added user
+     */
     @Override
     public Utilizatori save(Utilizatori entitate) {
         /**
@@ -114,6 +132,11 @@ public class UtilizatorDbRepository implements Repository<String, Utilizatori> {
         }
     }
 
+    /**
+     * Delets the user with the specified username from the database
+     * @param username
+     * @return the modified user map
+     */
     @Override
     public Optional<Utilizatori> delete(String username) {
         if(username==null)
@@ -136,6 +159,11 @@ public class UtilizatorDbRepository implements Repository<String, Utilizatori> {
         }
     }
 
+    /**
+     * Updates a specified user after it has been modified and returns it
+     * @param entitate
+     * @return entitate
+     */
     @Override
     public Utilizatori update(Utilizatori entitate) {
         if(entitate==null)

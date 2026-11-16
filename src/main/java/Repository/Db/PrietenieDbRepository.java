@@ -41,11 +41,22 @@ public class PrietenieDbRepository implements Repository<Tuple<String,String>, P
         return DriverManager.getConnection(url,user,password);
     }
 
+    /**
+     * Creates a map of all existing friendships in the database
+     * @param rs
+     * @return the newly created friendship
+     * @throws SQLException
+     */
     private static Prietenie map(ResultSet rs) throws SQLException{
         return new Prietenie(rs.getString("username1"),rs.getString("username2"),rs.getTimestamp("friends_from").toLocalDateTime());
 
     }
 
+    /**
+     * Searches for the friendship with the specified ID made up of a pair of usernames
+     * @param ID
+     * @return
+     */
     @Override
     public Optional<Prietenie> findOne(Tuple<String, String> ID) {
             if(ID.getDreapta()==null || ID.getStanga()==null)
@@ -70,6 +81,10 @@ public class PrietenieDbRepository implements Repository<Tuple<String,String>, P
             }
     }
 
+    /**
+     * Finds and return all existing friendships
+     * @return
+     */
     @Override
     public Collection<Prietenie> findAll()
     {
@@ -89,6 +104,11 @@ public class PrietenieDbRepository implements Repository<Tuple<String,String>, P
         }
     }
 
+    /**
+     * Saves a specified friendships in the database and returns the added friendship
+     * @param entitate
+     * @return
+     */
     @Override
     public Prietenie save(Prietenie entitate) {
         validator.validare(entitate);
@@ -120,6 +140,11 @@ public class PrietenieDbRepository implements Repository<Tuple<String,String>, P
         }
     }
 
+    /**
+     * Delets a friendship with the specified ID made up of a pair of usernames from the database
+     * @param ID
+     * @return
+     */
     @Override
     public Optional<Prietenie> delete(Tuple<String, String> ID) {
         if(ID.getDreapta()==null || ID.getStanga()==null)
@@ -146,6 +171,11 @@ public class PrietenieDbRepository implements Repository<Tuple<String,String>, P
         }
     }
 
+    /**
+     * Updates a specified frienship after it is modified
+     * @param entitate
+     * @return
+     */
     @Override
     public Prietenie update(Prietenie entitate) {
         if(entitate==null)
