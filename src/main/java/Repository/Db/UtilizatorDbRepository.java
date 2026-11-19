@@ -4,6 +4,9 @@ import Entitati.Utilizatori;
 import Entitati.Validator.Validator;
 import Excepti.ExceptieDuplicat;
 import Repository.Repository;
+import util.paging.Page;
+import util.paging.Pageable;
+import util.paging.PagingRepository;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -12,7 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-public class UtilizatorDbRepository implements Repository<String, Utilizatori> {
+public class UtilizatorDbRepository implements PagingRepository<String, Utilizatori> {
 
     private static final String COLUMNS = "id, username, first_name, last_name";
 
@@ -39,7 +42,7 @@ public class UtilizatorDbRepository implements Repository<String, Utilizatori> {
      * @return
      * @throws SQLException
      */
-    private static Utilizatori map(ResultSet rs) throws SQLException{
+    static Utilizatori map(ResultSet rs) throws SQLException{
         return new Utilizatori(rs.getLong("id"),rs.getString("username"),rs.getString("first_name"),rs.getString("last_name"));
     }
 
@@ -185,6 +188,43 @@ public class UtilizatorDbRepository implements Repository<String, Utilizatori> {
         catch (SQLException e)
         {
             throw DbErrors.translate(e," updating a user !");
+        }
+    }
+
+    @Override
+    public Page<Utilizatori> findAllOnPage(Pageable pageable) {
+        if(pageable==null)
+        {
+            throw new IllegalArgumentException("Numarul paginilor nu poate fi null !");
+        }
+        String sqlTotal ="SELECT COUNT(*) FROM Users" ;
+        String sqlPagina ="SELECT" +COLUMNS+ "FROM Users ORDER BY id LIMIT ? OFFSET ?";
+        try(Connection c = connect())
+        {
+            long total;
+            try(PreparedStatement ps = c.prepareStatement(sqlTotal);ResultSet rs = ps.executeQuery())
+            {
+                rs.next();
+                total =rs.getLong(1);
+            }
+            List<Utilizatori> pagina = new ArrayList<>();
+            try(PreparedStatement ps = c.prepareStatement(sqlPagina))
+            {
+                ps.setInt(1,pageable.getPageSize());
+                ps.setLong(2,pageable.getOffset());
+                try(ResultSet rs = ps.executeQuery())
+                {
+                    while(rs.next())
+                    {
+                        pagina.add(map(rs));
+                    }
+                }
+            }
+            return new Page<>(total,pagina);
+        }
+        catch(SQLException e)
+        {
+            throw DbErrors.translate(e," listing a page of users !");
         }
     }
 }

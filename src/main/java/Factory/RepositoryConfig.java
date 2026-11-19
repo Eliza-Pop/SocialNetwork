@@ -20,14 +20,16 @@ public class RepositoryConfig {
     private final String dbUrl;
     private final String dbUser;
     private final String dbPassword;
+    private final int pageSize;
 
-    public RepositoryConfig(RepositoryType type, Path utilizatoriFile, Path prieteniiFile, String dbUrl, String dbUser, String dbPassword) {
+    public RepositoryConfig(RepositoryType type, Path utilizatoriFile, Path prieteniiFile, String dbUrl, String dbUser, String dbPassword , int pageSize) {
         this.type = type;
         this.utilizatoriFile = utilizatoriFile;
         this.prieteniiFile = prieteniiFile;
         this.dbUrl = dbUrl;
         this.dbUser = dbUser;
         this.dbPassword = dbPassword;
+        this.pageSize = pageSize;
     }
 
     public String getDbUrl()
@@ -73,6 +75,21 @@ public class RepositoryConfig {
         }
     }
 
+    private static int citestePageSize(Properties p)
+    {
+        String valoare = cere(p,"page.size");
+        try{
+           int marime = Integer.parseInt(valoare);
+           if(marime<=0)
+               throw new RepositoryException("Marimea paginii trebuie sa fie mai mare decat zero !");
+           return marime;
+
+        }catch (NumberFormatException e)
+        {
+            throw new RepositoryException("Page.size trebuie sa fie un numar intreg ! "+valoare,e);
+        }
+    }
+
     public static RepositoryConfig load(Path cale) {
         Properties p = new Properties();
         try (BufferedReader r = Files.newBufferedReader(cale, StandardCharsets.UTF_8)) {
@@ -84,11 +101,11 @@ public class RepositoryConfig {
         switch (tip)
         {
             case MEMORY:
-                return new RepositoryConfig(tip,null,null,null,null,null);
+                return new RepositoryConfig(tip,null,null,null,null,null,0);
             case DATABASE:
-                return new RepositoryConfig(tip,null,null,cere(p,"db.url"),cere(p,"db.user"),cere(p,"db.password"));
+                return new RepositoryConfig(tip,null,null,cere(p,"db.url"),cere(p,"db.user"),cere(p,"db.password"),citestePageSize(p));
             case FILE:
-                return new RepositoryConfig(tip, Paths.get(cere(p,"repository.file.Utilizatori")),Paths.get(cere(p,"repository.file.Prietenii")),null,null,null);
+                return new RepositoryConfig(tip, Paths.get(cere(p,"repository.file.Utilizatori")),Paths.get(cere(p,"repository.file.Prietenii")),null,null,null,0);
             default:
                 throw new RepositoryException("Tip de persistenta nesuportat "+tip);
         }

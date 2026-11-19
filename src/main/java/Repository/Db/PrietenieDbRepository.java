@@ -7,6 +7,9 @@ import Entitati.Validator.Validator;
 import Excepti.ExceptieDuplicat;
 import Excepti.ExceptieInexistenta;
 import Repository.Repository;
+import util.paging.FriendsPagingRepository;
+import util.paging.Page;
+import util.paging.Pageable;
 
 import java.sql.*;
 import java.time.format.DateTimeFormatter;
@@ -15,7 +18,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-public class PrietenieDbRepository implements Repository<Tuple<String,String>, Prietenie> {
+public class PrietenieDbRepository implements Repository<Tuple<String,String>, Prietenie>, FriendsPagingRepository {
 
     private static final String SELECT_ALL = "SELECT u1.username AS username1, u2.username AS username2, f.friends_from "
                     + "FROM friendships f "
@@ -197,6 +200,54 @@ public class PrietenieDbRepository implements Repository<Tuple<String,String>, P
         catch (SQLException e)
         {
             throw DbErrors.translate(e," updating a user !");
+        }
+    }
+
+    @Override
+    public Page<Utilizatori> findFriendsOnPage(Long id, Pageable pageable){
+        if(pageable==null)
+        {
+            throw new IllegalArgumentException("Numarul paginilor nu poate fi null !");
+        }
+        if(id==null)
+        {
+            throw new IllegalArgumentException("Id-ul nu poate fi null !");
+        }
+        String sqlTotal ="SELECT COUNT(*) FROM Friendships WHERE id1 = ? OR id2 = ?" ;
+        String sqlPagina = "SELECT u.id, u.username, u.first_name, u.last_name "
+                + "FROM friendships f "
+                + "JOIN users u ON u.id = CASE WHEN f.id1 = ? THEN f.id2 ELSE f.id1 END "
+                + "WHERE f.id1 = ? OR f.id2 = ? "
+                + "ORDER BY u.id LIMIT ? OFFSET ?";
+        try(Connection c = connect())
+        {
+            long total;
+            try(PreparedStatement ps = c.prepareStatement(sqlTotal);ResultSet rs = ps.executeQuery())
+            {
+                rs.next();
+                total =rs.getLong(1);
+            }
+            List<Utilizatori> pagina = new ArrayList<>();
+            try(PreparedStatement ps = c.prepareStatement(sqlPagina))
+            {
+                ps.setLong(1,id);
+                ps.setLong(2,id);
+                ps.setLong(3,id);
+                ps.setInt(4,pageable.getPageSize());
+                ps.setLong(5,pageable.getOffset());
+                try(ResultSet rs = ps.executeQuery())
+                {
+                    while(rs.next())
+                    {
+                        pagina.add(UtilizatorDbRepository.map(rs));
+                    }
+                }
+            }
+            return new Page<>(total,pagina);
+        }
+        catch(SQLException e)
+        {
+            throw DbErrors.translate(e," listing a page of friendships !");
         }
     }
 }
